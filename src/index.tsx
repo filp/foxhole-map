@@ -25,7 +25,7 @@ const RegionBorders = () => (
       <Polygon
         positions={borders}
         key={i}
-        pathOptions={{ color: 'black', opacity: 0.1 }}
+        pathOptions={{ color: 'black', opacity: 0.1, fillOpacity: 0 }}
       />
     ))}
   </LayerGroup>
