@@ -1,0 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.leaflet-div-icon {
+  @apply bg-transparent border-none text-center text-stone-700;
+}
