@@ -1,4 +1,5 @@
 import type { LatLngExpression } from 'leaflet';
+import mapData from './mapData.json';
 
 const mapBounds = [
   [-228, 0],
@@ -7,9 +8,8 @@ const mapBounds = [
 
 const mapWidth = mapBounds[1][1] - mapBounds[0][1];
 const mapOrigin = { x: 128, y: -128 };
-
-export const regionWidth = mapWidth / 6.06; // Standard Region Width
-export const regionHeight = (regionWidth * Math.sqrt(3)) / 2; // Standard Region Height
+const regionWidth = mapWidth / 6.06;
+const regionHeight = (regionWidth * Math.sqrt(3)) / 2;
 
 export const regions = [
   { id: 3, name: 'Deadlands', center: [mapOrigin.y, mapOrigin.x] },
@@ -266,3 +266,26 @@ export const regionBorders = regions.map(
       [region.center[0] - regionHeight / 2, region.center[1] - regionWidth / 4],
     ] as LatLngExpression[]
 );
+
+const convertRegionCoords = (regionId: number, x: number, y: number) => {
+  const region = regions.find((x) => x.id === regionId);
+
+  if (!region) {
+    throw new Error(`invariant: invalid region id ${regionId}`);
+  }
+
+  const xC = region.center[0] - regionWidth / 2 + regionWidth * x;
+  const yC = region.center[1] + regionHeight / 2 - regionHeight * y;
+
+  return [xC, yC];
+};
+
+// TODO: commit this to json file:
+export const betterMapData = mapData.map((md) => ({
+  id: md.regionId,
+  textItems: md.mapTextItems.map((ti) => ({
+    title: ti.text,
+    type: ti.mapMarkerType,
+    position: convertRegionCoords(md.regionId, ti.x, ti.y),
+  })),
+}));
