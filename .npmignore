@@ -1,0 +1,5 @@
+/coverage
+/src
+.github
+.eslintrc.js
+jest.config.js
