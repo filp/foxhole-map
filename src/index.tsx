@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { CRS, DivIcon, type LatLngExpression } from 'leaflet';
 import {
@@ -12,6 +12,7 @@ import {
 } from 'react-leaflet';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
+import { searcher } from './map/search';
 
 const element = document.getElementById('app');
 
@@ -106,9 +107,19 @@ const UtilityButton = ({
 
 const UtilityPanel = () => {
   const map = useMap();
+  const searchInput = useRef<HTMLInputElement>(null);
+  const onSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
 
-  const onSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(event.target.value);
+      const results = searcher.search(searchInput.current!.value);
+
+      if (results.length > 0) {
+        const result = results[0];
+        map.flyTo(result.position as LatLngExpression, 5);
+      }
+    }
   };
 
   return (
@@ -124,10 +135,11 @@ const UtilityPanel = () => {
       <div>
         <input
           type="text"
+          ref={searchInput}
           tabIndex={1}
           className="bg-stone-900 text-stone-200 w-full p-4 text-lg outline-none rounded border border-stone-700 shadow-inner"
           placeholder="Find location..."
-          onChange={onSearchChange}
+          onKeyDown={onSearch}
         />
       </div>
     </div>
