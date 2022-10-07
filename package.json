@@ -1,12 +1,12 @@
 {
-  "name": "ts-package-boilerplate",
+  "name": "foxhole-map",
   "version": "0.1.0",
-  "description": "Base template for an npm package using Typescript, Yarn, etc.",
-  "main": "build/src/index.js",
-  "repository": "git@github.com:filp/ts-package-boilerplate",
+  "description": "Interactive map for the Foxhole multiplayer game",
+  "repository": "git@github.com:filp/foxhole-map.git",
   "author": "Filipe Dobreira",
   "license": "MIT",
   "private": true,
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "lint": "eslint .",
     "build": "parcel build src/index.html",
