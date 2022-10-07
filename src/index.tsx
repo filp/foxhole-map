@@ -11,7 +11,12 @@ import {
   Popup,
 } from 'react-leaflet';
 
-import { betterMapData, regionBorders, regions } from './map/regions';
+import {
+  betterMapData,
+  rawRoadData,
+  regionBorders,
+  regions,
+} from './map/regions';
 import { searcher } from './map/search';
 
 const element = document.getElementById('app');
@@ -166,6 +171,20 @@ const App = () => (
       <RegionBorders />
       <RegionTitles />
       <StaticMapData />
+      <LayerGroup>
+        {rawRoadData.map((p, i) => (
+          <Marker
+            key={i}
+            position={p as LatLngExpression}
+            icon={
+              new DivIcon({
+                iconSize: [5, 5],
+                html: '<span class="bg-blue-600 w-[5px] h-[5px] block"></span>',
+              })
+            }
+          />
+        ))}
+      </LayerGroup>
       <UtilityPanel />
     </MapContainer>
   </div>
