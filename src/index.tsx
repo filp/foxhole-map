@@ -53,7 +53,7 @@ const RegionTitles = () => (
   </LayerGroup>
 );
 
-const StaticMapData = () => {
+const useZoomLevel = () => {
   const map = useMap();
   const [zoomLevel, setZoomLevel] = useState(map.getZoom());
 
@@ -62,6 +62,12 @@ const StaticMapData = () => {
       setZoomLevel(map.getZoom());
     });
   }, []);
+
+  return [zoomLevel, setZoomLevel];
+};
+
+const StaticMapData = () => {
+  const [zoomLevel] = useZoomLevel();
 
   if (zoomLevel < 5) {
     return null;
@@ -79,7 +85,7 @@ const StaticMapData = () => {
               icon={
                 new DivIcon({
                   iconSize: [150, 20],
-                  iconAnchor: [75, 15],
+                  iconAnchor: [0, 0],
                   html: `<span class="text-sm">${ti.title}</span>`,
                 })
               }
@@ -138,7 +144,7 @@ const LocationSearch = ({
             <Combobox.Option
               key={location.text}
               value={location.position}
-              className="text-base text-stone-400 ui-active:text-white px-2 py-1"
+              className="text-stone-400 ui-active:text-white px-2 py-1"
             >
               {location.text}
             </Combobox.Option>

@@ -274,8 +274,8 @@ const convertRegionCoords = (regionId: number, x: number, y: number) => {
     throw new Error(`invariant: invalid region id ${regionId}`);
   }
 
-  const xC = region.center[0] - regionWidth / 2 + regionWidth * x;
-  const yC = region.center[1] + regionHeight / 2 - regionHeight * y;
+  const xC = -3.5 + region.center[0] - regionWidth / 2 + regionWidth * x;
+  const yC = 1 + region.center[1] + regionHeight / 2 - regionHeight * y;
 
   return [xC, yC];
 };

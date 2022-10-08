@@ -5,3 +5,7 @@
 .leaflet-div-icon {
   @apply bg-transparent border-none text-center text-stone-700;
 }
+
+.leaflet-container {
+  @apply font-sans text-base;
+}
