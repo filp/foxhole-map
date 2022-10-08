@@ -1,6 +1,5 @@
 import type { LatLngExpression } from 'leaflet';
 import mapData from './mapData.json';
-import roadData from './roads.json';
 
 const mapBounds = [
   [-228, 0],
@@ -290,11 +289,3 @@ export const betterMapData = mapData.map((md) => ({
     position: convertRegionCoords(md.regionId, ti.x, ti.y),
   })),
 }));
-
-// TODO: commit this to json file:
-export const rawRoadData = roadData.map((p) => [
-  -140 + p[1] * -0.12,
-  107 + p[0] * 0.12,
-]);
-
-console.log(rawRoadData);
