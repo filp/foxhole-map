@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { CRS, DivIcon, type LatLngExpression } from 'leaflet';
 import {
@@ -10,6 +10,8 @@ import {
   useMap,
   Popup,
 } from 'react-leaflet';
+import { Combobox } from '@headlessui/react';
+import cn from 'classnames';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
@@ -105,22 +107,50 @@ const UtilityButton = ({
   </button>
 );
 
+const LocationSearch = ({
+  onFlyToLocation,
+}: {
+  onFlyToLocation: (coords: number[]) => void;
+}) => {
+  const [query, setQuery] = useState<string>();
+
+  const filteredLocations =
+    !query || query === '' ? [] : searcher.search(query).slice(0, 5);
+
+  const inputKlass = cn(
+    'bg-stone-900 text-stone-200 w-full p-4 text-lg outline-none rounded border border-stone-700 shadow-inner',
+    {
+      // Highlight the input if no results are available:
+      'border-red-800': query && query !== '' && filteredLocations.length === 0,
+    }
+  );
+
+  return (
+    <div>
+      <Combobox onChange={(coords: number[]) => onFlyToLocation(coords)}>
+        <Combobox.Input
+          placeholder="Find location"
+          onChange={(event) => setQuery(event.target.value)}
+          className={inputKlass}
+        />
+        <Combobox.Options className="absolute bg-stone-800 shadow-sm rounded border border-stone-600 mt-1">
+          {filteredLocations.map((location) => (
+            <Combobox.Option
+              key={location.text}
+              value={location.position}
+              className="text-base text-stone-400 ui-active:text-white px-2 py-1"
+            >
+              {location.text}
+            </Combobox.Option>
+          ))}
+        </Combobox.Options>
+      </Combobox>
+    </div>
+  );
+};
+
 const UtilityPanel = () => {
   const map = useMap();
-  const searchInput = useRef<HTMLInputElement>(null);
-  const onSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      event.stopPropagation();
-
-      const results = searcher.search(searchInput.current!.value);
-
-      if (results.length > 0) {
-        const result = results[0];
-        map.flyTo(result.position as LatLngExpression, 5);
-      }
-    }
-  };
 
   return (
     <div className="bg-stone-800 min-w-[320px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-2">
@@ -132,16 +162,11 @@ const UtilityPanel = () => {
           Reset Map
         </UtilityButton>
       </div>
-      <div>
-        <input
-          type="text"
-          ref={searchInput}
-          tabIndex={1}
-          className="bg-stone-900 text-stone-200 w-full p-4 text-lg outline-none rounded border border-stone-700 shadow-inner"
-          placeholder="Find location..."
-          onKeyDown={onSearch}
-        />
-      </div>
+      <LocationSearch
+        onFlyToLocation={(coords) => {
+          map.flyTo(coords as LatLngExpression, 5);
+        }}
+      />
     </div>
   );
 };

@@ -13,9 +13,11 @@
     "dev": "parcel serve src/index.html"
   },
   "devDependencies": {
+    "@headlessui/tailwindcss": "^0.1.1",
     "@types/fuzzy-search": "^2.1.2",
     "@types/jest": "^28.1.6",
     "@types/leaflet": "^1.8.0",
+    "@types/lodash.uniqby": "^4.7.7",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
@@ -35,9 +37,12 @@
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.3",
     "axios": "^1.1.2",
+    "classnames": "^2.3.2",
     "fuzzy-search": "^3.2.1",
     "leaflet": "^1.9.2",
+    "lodash.uniqby": "^4.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.1.0"

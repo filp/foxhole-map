@@ -1,5 +1,6 @@
 import FuzzySearch from 'fuzzy-search';
 
+import uniqBy from 'lodash.uniqby';
 import { betterMapData } from './regions';
 import { regions } from './regions';
 
@@ -16,6 +17,7 @@ const haystack = [
   })),
 ];
 
-export const searcher = new FuzzySearch(haystack, ['text'], {
+export const searcher = new FuzzySearch(uniqBy(haystack, 'text'), ['text'], {
   caseSensitive: false,
+  sort: true,
 });
