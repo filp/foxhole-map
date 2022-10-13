@@ -16,6 +16,7 @@ import cn from 'classnames';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
+import { CodeIcon } from './icons';
 
 const element = document.getElementById('app');
 
@@ -188,7 +189,7 @@ const UtilityPanel = () => {
   const map = useMap();
 
   return (
-    <div className="bg-stone-800 min-w-[320px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-2">
+    <div className="bg-stone-800 min-w-[380px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-4">
       <div className="flex flex-row gap-1 items-center justify-items-stretch">
         <UtilityButton onClick={() => map.flyTo([-128, 128], map.getZoom())}>
           Center Map
@@ -202,6 +203,17 @@ const UtilityPanel = () => {
           map.flyTo(coords as LatLngExpression, 5);
         }}
       />
+      <div className="text-sm">
+        <p>
+          <a
+            target="_blank"
+            href="https://github.com/filp/foxhole-map"
+            className="flex flex-row items-center gap-1"
+          >
+            <CodeIcon /> Contribute to foxhole-map on GitHub
+          </a>
+        </p>
+      </div>
     </div>
   );
 };

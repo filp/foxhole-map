@@ -9,3 +9,12 @@
 .leaflet-container {
   @apply font-sans text-base;
 }
+
+.leaflet-container a {
+  @apply text-stone-300;
+}
+
+.leaflet-container a:hover,
+.leaflet-container a:focus {
+  @apply text-stone-400;
+}
