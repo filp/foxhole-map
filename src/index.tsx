@@ -253,7 +253,7 @@ const UtilityPanel = ({
       />
       <div className="border-t border-stone-600 pt-4">
         <p className="text-sm text-stone-400 mb-2">
-          User markers to save locations for yourself. Markers are saved locally
+          Use markers to save locations for yourself. Markers are saved locally
           on your browser, and are only visible to you.
         </p>
         <input
