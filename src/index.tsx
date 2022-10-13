@@ -123,9 +123,7 @@ const StaticMapData = () => {
                   html: `<span class="text-sm">${ti.title}</span>`,
                 })
               }
-            >
-              <Popup>{ti.title}</Popup>
-            </Marker>
+            />
           ))}
         </LayerGroup>
       ))}
