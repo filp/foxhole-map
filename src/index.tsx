@@ -61,24 +61,31 @@ const RegionBorders = () => (
   </LayerGroup>
 );
 
-const RegionTitles = () => (
-  <LayerGroup>
-    {regions.map((region) => (
-      <Marker
-        position={region.center as LatLngExpression}
-        key={region.id}
-        title={region.name}
-        icon={
-          new DivIcon({
-            iconSize: [150, 20],
-            iconAnchor: [75, 15],
-            html: `<span class="text-base">${region.name}</span>`,
-          })
-        }
-      ></Marker>
-    ))}
-  </LayerGroup>
-);
+const RegionTitles = () => {
+  const [zoom] = useZoomLevel();
+  return (
+    <LayerGroup>
+      {regions.map((region) => {
+        const regionTitleZoomKlass = `region-title-zoom-${zoom}`;
+
+        return (
+          <Marker
+            position={region.center as LatLngExpression}
+            key={region.id}
+            title={region.name}
+            icon={
+              new DivIcon({
+                iconSize: [150, 20],
+                iconAnchor: [75, 15],
+                html: `<span class="text-base region-title ${regionTitleZoomKlass}">${region.name}</span>`,
+              })
+            }
+          ></Marker>
+        );
+      })}
+    </LayerGroup>
+  );
+};
 
 const StaticMapData = () => {
   const [zoomLevel] = useZoomLevel();

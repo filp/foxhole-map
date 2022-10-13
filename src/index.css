@@ -56,3 +56,8 @@ a.leaflet-control-zoom-in.leaflet-disabled {
 .leaflet-popup-tip-container {
   @apply hidden;
 }
+
+/* make region titles not crowd local titles when zoomed in */
+.region-title-zoom-5 {
+  @apply opacity-30 text-6xl text-stone-500;
+}
