@@ -26,7 +26,7 @@ import { findNearest } from 'geolib';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
-import { CodeIcon, DeleteIcon, MapPinSvg } from './icons';
+import { CodeIcon, DeleteIcon, MapPinSvg, SearchIcon } from './icons';
 import { getRoadGraph, getRoadPoints } from './map/roads';
 
 type ProjectionMap = {
@@ -168,11 +168,16 @@ const LocationSearch = ({
   return (
     <div>
       <Combobox onChange={(coords: number[]) => onFlyToLocation(coords)}>
-        <Combobox.Input
-          placeholder="Find location"
-          onChange={(event) => setQuery(event.target.value)}
-          className={inputKlass}
-        />
+        <div className="flex flex-row items-center gap-2">
+          <div className="px-2 text-stone-300">
+            <SearchIcon />
+          </div>
+          <Combobox.Input
+            placeholder="Find location"
+            onChange={(event) => setQuery(event.target.value)}
+            className={inputKlass}
+          />
+        </div>
         <Combobox.Options className="absolute bg-stone-800 shadow-sm rounded border border-stone-600 mt-1">
           {filteredLocations.map((location) => (
             <Combobox.Option
@@ -299,6 +304,11 @@ const UtilityPanel = ({
 
   return (
     <div className="bg-stone-800 max-w-[390px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-4">
+      <LocationSearch
+        onFlyToLocation={(coords) => {
+          map.flyTo(coords as LatLngExpression, 5);
+        }}
+      />
       <div className="flex flex-row gap-1 items-center justify-items-stretch">
         <UtilityButton onClick={() => map.flyTo([-128, 128], map.getZoom())}>
           Center Map
@@ -307,11 +317,6 @@ const UtilityPanel = ({
           Reset Map
         </UtilityButton>
       </div>
-      <LocationSearch
-        onFlyToLocation={(coords) => {
-          map.flyTo(coords as LatLngExpression, 5);
-        }}
-      />
       <div className="border-t border-stone-600 pt-4">
         <p className="text-sm text-stone-400 mb-2">
           Use markers to save locations for yourself. Markers are saved locally
