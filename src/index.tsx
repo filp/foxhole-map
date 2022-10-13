@@ -18,7 +18,7 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
-import { CodeIcon } from './icons';
+import { CodeIcon, MapPinSvg } from './icons';
 
 const element = document.getElementById('app');
 
@@ -206,9 +206,18 @@ const UserMarkers = ({ userMarkers }: { userMarkers: UserMarkerMap }) => {
     const marker = userMarkers[markerId];
 
     return (
-      <Marker key={markerId} position={marker.position} title={marker.name}>
-        <Popup>{marker.name}</Popup>
-      </Marker>
+      <Marker
+        key={markerId}
+        position={marker.position}
+        title={marker.name}
+        icon={
+          new DivIcon({
+            iconSize: [150, 20],
+            iconAnchor: [0, 0],
+            html: `<div class="user-marker"><span class="user-marker-anchor"></span>${MapPinSvg} <span>${marker.name}</span></div>`,
+          })
+        }
+      ></Marker>
     );
   });
 
@@ -231,6 +240,8 @@ const UtilityPanel = ({
         name: markerNameRef.current!.value || 'Unnamed Marker',
         position: event.latlng,
       });
+
+      markerNameRef.current!.value = '';
 
       setIsWaitingForMarker(false);
     },
