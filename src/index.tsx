@@ -85,7 +85,7 @@ const StaticMapData = () => {
               icon={
                 new DivIcon({
                   iconSize: [150, 20],
-                  iconAnchor: [0, 0],
+                  iconAnchor: [95, 12],
                   html: `<span class="text-sm">${ti.title}</span>`,
                 })
               }
