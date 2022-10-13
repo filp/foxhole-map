@@ -1,5 +1,10 @@
 {
-  "include": ["src/", "src/map/mapData.json", "src/map/roads.json"],
+  "include": [
+    "src/",
+    "src/data/mapData.json",
+    "src/data/roads.json",
+    "src/data/adjacency.json"
+  ],
   "compilerOptions": {
     /* Visit https://aka.ms/tsconfig to read more about this file */
 

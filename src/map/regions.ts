@@ -1,5 +1,5 @@
 import type { LatLngExpression } from 'leaflet';
-import mapData from './mapData.json';
+import mapData from '../data/mapData.json';
 
 const mapBounds = [
   [-228, 0],

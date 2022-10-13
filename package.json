@@ -10,7 +10,8 @@
   "scripts": {
     "lint": "eslint .",
     "build": "parcel build src/index.html",
-    "dev": "parcel serve src/index.html"
+    "dev": "parcel serve src/index.html",
+    "process-roads": "ts-node src/util/processRoads.ts"
   },
   "devDependencies": {
     "@headlessui/tailwindcss": "^0.1.1",
@@ -18,8 +19,10 @@
     "@types/jest": "^28.1.6",
     "@types/leaflet": "^1.8.0",
     "@types/lodash.uniqby": "^4.7.7",
+    "@types/node": "^18.8.5",
     "@types/react": "^18.0.21",
     "@types/react-dom": "^18.0.6",
+    "@types/svg-parser": "^2.0.3",
     "@types/uuid": "^8.3.4",
     "@typescript-eslint/eslint-plugin": "^5.30.7",
     "@typescript-eslint/parser": "^5.30.7",
@@ -35,18 +38,23 @@
     "process": "^0.11.10",
     "tailwindcss": "^3.1.8",
     "ts-jest": "^28.0.7",
+    "ts-node": "^10.9.1",
     "typescript": "^4.7.4"
   },
   "dependencies": {
+    "dijkstra-calculator": "^1.0.8",
     "@headlessui/react": "^1.7.3",
     "axios": "^1.1.2",
     "classnames": "^2.3.2",
     "fuzzy-search": "^3.2.1",
+    "geolib": "^3.3.3",
     "leaflet": "^1.9.2",
     "lodash.uniqby": "^4.7.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-leaflet": "^4.1.0",
+    "svg-parser": "^2.0.4",
+    "svg-points": "^6.0.1",
     "use-local-storage": "^2.3.6",
     "uuid": "^9.0.0"
   }

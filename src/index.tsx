@@ -1,6 +1,12 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useMemo } from 'react';
 import ReactDOM from 'react-dom/client';
-import { CRS, DivIcon, type LatLng, type LatLngExpression } from 'leaflet';
+import {
+  CRS,
+  DivIcon,
+  type PointExpression,
+  type LatLng,
+  type LatLngExpression,
+} from 'leaflet';
 import {
   MapContainer,
   TileLayer,
@@ -10,15 +16,22 @@ import {
   useMap,
   Popup,
   useMapEvents,
+  Polyline,
 } from 'react-leaflet';
 import { Combobox } from '@headlessui/react';
 import cn from 'classnames';
 import useLocalStorage from 'use-local-storage';
 import { v4 as uuidV4 } from 'uuid';
+import { findNearest } from 'geolib';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
 import { CodeIcon, DeleteIcon, MapPinSvg } from './icons';
+import { getRoadGraph, getRoadPoints } from './map/roads';
+
+type ProjectionMap = {
+  [originalIdent: string]: string;
+};
 
 const element = document.getElementById('app');
 
@@ -125,7 +138,7 @@ const UtilityButton = ({
   children,
   className,
 }: React.PropsWithChildren<{
-  onClick: () => void;
+  onClick: (event: React.MouseEvent) => void;
   className?: string;
 }>) => (
   <button
@@ -208,6 +221,30 @@ const MapGeneralEvents = () => {
   return null;
 };
 
+const MapPinMarker = ({
+  children,
+  position,
+  title,
+}: {
+  position: LatLng;
+  title: string;
+  children?: React.ReactNode;
+}) => (
+  <Marker
+    position={position}
+    title={title}
+    icon={
+      new DivIcon({
+        iconSize: [150, 20],
+        iconAnchor: [0, 0],
+        html: `<div class="user-marker"><span class="user-marker-anchor"></span>${MapPinSvg} <span>${title}</span></div>`,
+      })
+    }
+  >
+    {children}
+  </Marker>
+);
+
 const UserMarkers = ({
   userMarkers,
   onRemoveUserMarker,
@@ -219,17 +256,10 @@ const UserMarkers = ({
     const marker = userMarkers[markerId];
 
     return (
-      <Marker
+      <MapPinMarker
         key={markerId}
         position={marker.position}
         title={marker.name}
-        icon={
-          new DivIcon({
-            iconSize: [150, 20],
-            iconAnchor: [0, 0],
-            html: `<div class="user-marker"><span class="user-marker-anchor"></span>${MapPinSvg} <span>${marker.name}</span></div>`,
-          })
-        }
       >
         <Popup>
           <UtilityButton
@@ -239,7 +269,7 @@ const UserMarkers = ({
             <DeleteIcon /> Delete Marker
           </UtilityButton>
         </Popup>
-      </Marker>
+      </MapPinMarker>
     );
   });
 
@@ -321,6 +351,113 @@ const UtilityPanel = ({
   );
 };
 
+const Navigation = () => {
+  const map = useMap();
+  const [roamMarker, setRoamMarker] = useState<LatLng>();
+  const [targetMarker, setTargetMarker] = useState<LatLng>();
+  const [isPickingTarget, setIsPickingTarget] = useState(false);
+  const [pathFound, setPathFound] = useState<LatLng[] | undefined>();
+  const [projectionMap, setProjectionMap] = useState<ProjectionMap>({});
+  const scaleFactor = 0.496;
+
+  const pointTransform = (p: number[]) => [
+    (591 + p[0]) * scaleFactor,
+    (1058 + p[1]) * scaleFactor,
+  ];
+
+  const roadPoints = useMemo(() => {
+    const newProjectionMap: ProjectionMap = {};
+
+    const generatedNewPoints = getRoadPoints().map((p) => {
+      const pos = pointTransform(p);
+
+      const unprojected = map.unproject(pos as PointExpression, 2);
+      newProjectionMap[JSON.stringify(unprojected)] = JSON.stringify(p);
+
+      return unprojected;
+    });
+
+    setProjectionMap(newProjectionMap);
+
+    return generatedNewPoints;
+  }, []);
+
+  const onPathfind = (start: LatLng, end: LatLng) => {
+    const graph = getRoadGraph();
+
+    const nearestPointToStart = findNearest(start, roadPoints) as LatLng;
+    const nearestPointToEnd = findNearest(end, roadPoints) as LatLng;
+
+    const graphStart = projectionMap[JSON.stringify(nearestPointToStart)];
+    const graphEnd = projectionMap[JSON.stringify(nearestPointToEnd)];
+
+    const pathResult = graph.calculateShortestPathAsLinkedListResult(
+      graphEnd,
+      graphStart
+    );
+
+    // Converts the pathResult instructions to a LatLng list for a polyline:
+    const pathLine = pathResult.map((inst, i) => {
+      const node = JSON.parse(i === 0 ? inst.source : inst.target) as number[];
+
+      return map.unproject(pointTransform(node) as PointExpression, 2);
+    });
+
+    setPathFound(pathLine);
+  };
+
+  useMapEvents({
+    click: (event) => {
+      if (isPickingTarget) {
+        setTargetMarker(event.latlng);
+        setIsPickingTarget(false);
+
+        onPathfind(roamMarker!, event.latlng);
+      } else {
+        setRoamMarker(event.latlng);
+      }
+    },
+  });
+
+  const startPin = roamMarker ? (
+    <MapPinMarker position={roamMarker} title="You">
+      <Popup autoClose={true}>
+        <UtilityButton
+          onClick={() => {
+            setIsPickingTarget(true);
+          }}
+        >
+          {isPickingTarget ? 'Pick a point' : 'Navigate to point'}
+        </UtilityButton>
+      </Popup>
+    </MapPinMarker>
+  ) : null;
+
+  const targetPin = targetMarker ? (
+    <MapPinMarker position={targetMarker} title="Destination">
+      <Popup autoClose={true}>
+        <UtilityButton
+          onClick={(event) => {
+            setTargetMarker(undefined);
+            event.preventDefault();
+            event.stopPropagation();
+          }}
+        >
+          Delete marker
+        </UtilityButton>
+      </Popup>
+    </MapPinMarker>
+  ) : null;
+
+  return (
+    <LayerGroup>
+      {pathFound ? <Polyline positions={pathFound} /> : null}
+      {startPin}
+      {targetPin}
+    </LayerGroup>
+  );
+};
+
 const App = () => {
   const [userMarkers, setUserMarkers] = useUserMarkers();
   const url = new URL(window.location.toString());
@@ -374,6 +511,7 @@ const App = () => {
             setUserMarkers(newMarkers);
           }}
         />
+        <Navigation />
       </MapContainer>
     </div>
   );
