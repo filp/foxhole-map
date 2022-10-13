@@ -162,11 +162,22 @@ const MapEventsManager = () => {
       const center = map.getCenter();
       const newUrl = new URL(window.location.toString());
 
-      newUrl.searchParams.set('lat', center.lat.toString());
-      newUrl.searchParams.set('lng', center.lng.toString());
-      newUrl.searchParams.set('z', map.getZoom().toString());
+      // If we're centering the map, just remove all location params
+      // from the url (if any):
+      if (center.lat === -128 && center.lng === 128 && map.getZoom() === 2) {
+        newUrl.searchParams.delete('lat');
+        newUrl.searchParams.delete('lng');
+        newUrl.searchParams.delete('z');
 
-      window.history.replaceState(null, '', newUrl.toString());
+        window.history.replaceState(null, '', newUrl);
+      } else {
+        // Otherwise, update the history state with the new params:
+        newUrl.searchParams.set('lat', center.lat.toString());
+        newUrl.searchParams.set('lng', center.lng.toString());
+        newUrl.searchParams.set('z', map.getZoom().toString());
+
+        window.history.replaceState(null, '', newUrl.toString());
+      }
     },
   });
 
