@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom/client';
 import { CRS, DivIcon, type LatLngExpression } from 'leaflet';
 import {
@@ -9,6 +9,7 @@ import {
   Marker,
   useMap,
   Popup,
+  useMapEvents,
 } from 'react-leaflet';
 import { Combobox } from '@headlessui/react';
 import cn from 'classnames';
@@ -57,11 +58,9 @@ const useZoomLevel = () => {
   const map = useMap();
   const [zoomLevel, setZoomLevel] = useState(map.getZoom());
 
-  useEffect(() => {
-    map.on('zoom', () => {
-      setZoomLevel(map.getZoom());
-    });
-  }, []);
+  useMapEvents({
+    zoom: () => setZoomLevel(map.getZoom()),
+  });
 
   return [zoomLevel, setZoomLevel];
 };
@@ -155,6 +154,25 @@ const LocationSearch = ({
   );
 };
 
+const MapEventsManager = () => {
+  const map = useMap();
+  useMapEvents({
+    // Update the url to reflect the new position:
+    moveend: () => {
+      const center = map.getCenter();
+      const newUrl = new URL(window.location.toString());
+
+      newUrl.searchParams.set('lat', center.lat.toString());
+      newUrl.searchParams.set('lng', center.lng.toString());
+      newUrl.searchParams.set('z', map.getZoom().toString());
+
+      window.history.replaceState(null, '', newUrl.toString());
+    },
+  });
+
+  return null;
+};
+
 const UtilityPanel = () => {
   const map = useMap();
 
@@ -177,30 +195,47 @@ const UtilityPanel = () => {
   );
 };
 
-const App = () => (
-  <div className="w-screen h-screen">
-    <MapContainer
-      className="w-screen h-screen bg-stone-800"
-      crs={CRS.Simple}
-      center={[-128, 128]}
-      zoom={2}
-      minZoom={2}
-      maxZoom={5}
-      maxBounds={[
-        [-256, -50],
-        [0, 306],
-      ]}
-      maxBoundsViscosity={1.0}
-      scrollWheelZoom={true}
-    >
-      <TileLayer url="https://raw.githubusercontent.com/Kastow/Foxhole-Map-Tiles/master/Tiles/{z}/{z}_{x}_{y}.png" />
-      <RegionBorders />
-      <RegionTitles />
-      <StaticMapData />
-      <UtilityPanel />
-    </MapContainer>
-  </div>
-);
+const App = () => {
+  const url = new URL(window.location.toString());
+
+  const lat = url.searchParams.has('lat')
+    ? parseInt(url.searchParams.get('lat')!)
+    : -128;
+
+  const lng = url.searchParams.has('lng')
+    ? parseInt(url.searchParams.get('lng')!)
+    : 128;
+
+  const zoom = url.searchParams.has('z')
+    ? parseInt(url.searchParams.get('z')!)
+    : 2;
+
+  return (
+    <div className="w-screen h-screen">
+      <MapContainer
+        className="w-screen h-screen bg-stone-800"
+        crs={CRS.Simple}
+        center={[lat, lng]}
+        zoom={zoom}
+        minZoom={2}
+        maxZoom={5}
+        maxBounds={[
+          [-256, -50],
+          [0, 306],
+        ]}
+        maxBoundsViscosity={1.0}
+        scrollWheelZoom={true}
+      >
+        <TileLayer url="https://raw.githubusercontent.com/Kastow/Foxhole-Map-Tiles/master/Tiles/{z}/{z}_{x}_{y}.png" />
+        <RegionBorders />
+        <RegionTitles />
+        <StaticMapData />
+        <UtilityPanel />
+        <MapEventsManager />
+      </MapContainer>
+    </div>
+  );
+};
 
 const root = ReactDOM.createRoot(element);
 root.render(<App />);
