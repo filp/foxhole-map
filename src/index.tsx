@@ -237,7 +237,7 @@ const UtilityPanel = ({
   });
 
   return (
-    <div className="bg-stone-800 min-w-[380px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-4">
+    <div className="bg-stone-800 max-w-[390px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-4">
       <div className="flex flex-row gap-1 items-center justify-items-stretch">
         <UtilityButton onClick={() => map.flyTo([-128, 128], map.getZoom())}>
           Center Map
@@ -252,11 +252,15 @@ const UtilityPanel = ({
         }}
       />
       <div className="border-t border-stone-600 pt-4">
+        <p className="text-sm text-stone-400 mb-2">
+          User markers to save locations for yourself. Markers are saved locally
+          on your browser, and are only visible to you.
+        </p>
         <input
           type="text"
           ref={markerNameRef}
           className={cn(inputBaseKlass, 'block mb-2')}
-          placeholder="Marker name"
+          placeholder="Marker label"
         />
         <UtilityButton
           onClick={() => {
