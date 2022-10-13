@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import ReactDOM from 'react-dom/client';
-import { CRS, DivIcon, type LatLngExpression } from 'leaflet';
+import { CRS, DivIcon, type LatLng, type LatLngExpression } from 'leaflet';
 import {
   MapContainer,
   TileLayer,
@@ -13,6 +13,8 @@ import {
 } from 'react-leaflet';
 import { Combobox } from '@headlessui/react';
 import cn from 'classnames';
+import useLocalStorage from 'use-local-storage';
+import { v4 as uuidV4 } from 'uuid';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
@@ -23,6 +25,29 @@ const element = document.getElementById('app');
 if (!element) {
   throw new Error('invariant: root element should be present');
 }
+
+const inputBaseKlass =
+  'bg-stone-900 text-stone-200 w-full p-4 text-lg outline-none rounded border border-stone-700 shadow-inner';
+
+const useZoomLevel = () => {
+  const map = useMap();
+  const [zoomLevel, setZoomLevel] = useState(map.getZoom());
+
+  useMapEvents({
+    zoom: () => setZoomLevel(map.getZoom()),
+  });
+
+  return [zoomLevel, setZoomLevel];
+};
+
+type UserMarkerMap = {
+  [markerId: string]: {
+    name: string;
+    position: LatLng;
+  };
+};
+
+const useUserMarkers = () => useLocalStorage<UserMarkerMap>('userMarkers', {});
 
 const RegionBorders = () => (
   <LayerGroup>
@@ -54,17 +79,6 @@ const RegionTitles = () => (
     ))}
   </LayerGroup>
 );
-
-const useZoomLevel = () => {
-  const map = useMap();
-  const [zoomLevel, setZoomLevel] = useState(map.getZoom());
-
-  useMapEvents({
-    zoom: () => setZoomLevel(map.getZoom()),
-  });
-
-  return [zoomLevel, setZoomLevel];
-};
 
 const StaticMapData = () => {
   const [zoomLevel] = useZoomLevel();
@@ -102,11 +116,16 @@ const StaticMapData = () => {
 const UtilityButton = ({
   onClick,
   children,
+  className,
 }: React.PropsWithChildren<{
   onClick: () => void;
+  className?: string;
 }>) => (
   <button
-    className="bg-stone-700 flex-1 text-white px-3 py-2 shadow-sm rounded border border-stone-600 hover:border-stone-500 hover:bg-stone-600 hover:shadow-lg"
+    className={cn(
+      'bg-stone-700 flex-1 text-white px-3 py-2 shadow-sm rounded border border-stone-600 hover:border-stone-500 hover:bg-stone-600 hover:shadow-lg',
+      className || ''
+    )}
     onClick={onClick}
   >
     {children}
@@ -123,13 +142,10 @@ const LocationSearch = ({
   const filteredLocations =
     !query || query === '' ? [] : searcher.search(query).slice(0, 5);
 
-  const inputKlass = cn(
-    'bg-stone-900 text-stone-200 w-full p-4 text-lg outline-none rounded border border-stone-700 shadow-inner',
-    {
-      // Highlight the input if no results are available:
-      'border-red-800': query && query !== '' && filteredLocations.length === 0,
-    }
-  );
+  const inputKlass = cn(inputBaseKlass, {
+    // Highlight the input if no results are available:
+    'border-red-800': query && query !== '' && filteredLocations.length === 0,
+  });
 
   return (
     <div>
@@ -155,7 +171,7 @@ const LocationSearch = ({
   );
 };
 
-const MapEventsManager = () => {
+const MapGeneralEvents = () => {
   const map = useMap();
   useMapEvents({
     // Update the url to reflect the new position:
@@ -185,8 +201,40 @@ const MapEventsManager = () => {
   return null;
 };
 
-const UtilityPanel = () => {
+const UserMarkers = ({ userMarkers }: { userMarkers: UserMarkerMap }) => {
+  const markers = Object.keys(userMarkers).map((markerId) => {
+    const marker = userMarkers[markerId];
+
+    return (
+      <Marker key={markerId} position={marker.position} title={marker.name}>
+        <Popup>{marker.name}</Popup>
+      </Marker>
+    );
+  });
+
+  return <LayerGroup>{markers}</LayerGroup>;
+};
+
+const UtilityPanel = ({
+  onAddUserMarker,
+}: {
+  onAddUserMarker: (userMarker: UserMarkerMap[string]) => void;
+}) => {
   const map = useMap();
+  const markerNameRef = useRef<HTMLInputElement>(null);
+  const [isWaitingForMarker, setIsWaitingForMarker] = useState(false);
+
+  useMapEvents({
+    click: (event) => {
+      if (!isWaitingForMarker) return;
+      onAddUserMarker({
+        name: markerNameRef.current!.value || 'Unnamed Marker',
+        position: event.latlng,
+      });
+
+      setIsWaitingForMarker(false);
+    },
+  });
 
   return (
     <div className="bg-stone-800 min-w-[380px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-4">
@@ -203,6 +251,24 @@ const UtilityPanel = () => {
           map.flyTo(coords as LatLngExpression, 5);
         }}
       />
+      <div className="border-t border-stone-600 pt-4">
+        <input
+          type="text"
+          ref={markerNameRef}
+          className={cn(inputBaseKlass, 'block mb-2')}
+          placeholder="Marker name"
+        />
+        <UtilityButton
+          onClick={() => {
+            setIsWaitingForMarker(!isWaitingForMarker);
+          }}
+          className={cn({
+            'border-red-600 bg-red-900': isWaitingForMarker,
+          })}
+        >
+          {isWaitingForMarker ? 'Cancel' : 'Create marker'}
+        </UtilityButton>
+      </div>
       <div className="text-sm">
         <p>
           <a
@@ -219,6 +285,7 @@ const UtilityPanel = () => {
 };
 
 const App = () => {
+  const [userMarkers, setUserMarkers] = useUserMarkers();
   const url = new URL(window.location.toString());
 
   const lat = url.searchParams.has('lat')
@@ -253,8 +320,16 @@ const App = () => {
         <RegionBorders />
         <RegionTitles />
         <StaticMapData />
-        <UtilityPanel />
-        <MapEventsManager />
+        <UtilityPanel
+          onAddUserMarker={(newMarker) => {
+            setUserMarkers({
+              ...userMarkers,
+              [uuidV4()]: newMarker,
+            });
+          }}
+        />
+        <MapGeneralEvents />
+        <UserMarkers userMarkers={userMarkers} />
       </MapContainer>
     </div>
   );
