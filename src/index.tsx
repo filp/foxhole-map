@@ -124,7 +124,7 @@ const StaticMapData = () => {
                 })
               }
             >
-              <Popup>HELLLO {ti.title}</Popup>
+              <Popup>{ti.title}</Popup>
             </Marker>
           ))}
         </LayerGroup>
