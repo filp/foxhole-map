@@ -18,7 +18,7 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
-import { CodeIcon, MapPinSvg } from './icons';
+import { CodeIcon, DeleteIcon, MapPinSvg } from './icons';
 
 const element = document.getElementById('app');
 
@@ -201,7 +201,13 @@ const MapGeneralEvents = () => {
   return null;
 };
 
-const UserMarkers = ({ userMarkers }: { userMarkers: UserMarkerMap }) => {
+const UserMarkers = ({
+  userMarkers,
+  onRemoveUserMarker,
+}: {
+  userMarkers: UserMarkerMap;
+  onRemoveUserMarker: (markerId: string) => void;
+}) => {
   const markers = Object.keys(userMarkers).map((markerId) => {
     const marker = userMarkers[markerId];
 
@@ -217,7 +223,16 @@ const UserMarkers = ({ userMarkers }: { userMarkers: UserMarkerMap }) => {
             html: `<div class="user-marker"><span class="user-marker-anchor"></span>${MapPinSvg} <span>${marker.name}</span></div>`,
           })
         }
-      ></Marker>
+      >
+        <Popup>
+          <UtilityButton
+            onClick={() => onRemoveUserMarker(markerId)}
+            className="flex flex-row items-center gap-1 text-sm"
+          >
+            <DeleteIcon /> Delete Marker
+          </UtilityButton>
+        </Popup>
+      </Marker>
     );
   });
 
@@ -344,7 +359,14 @@ const App = () => {
           }}
         />
         <MapGeneralEvents />
-        <UserMarkers userMarkers={userMarkers} />
+        <UserMarkers
+          userMarkers={userMarkers}
+          onRemoveUserMarker={(markerId) => {
+            const newMarkers = { ...userMarkers };
+            delete newMarkers[markerId];
+            setUserMarkers(newMarkers);
+          }}
+        />
       </MapContainer>
     </div>
   );

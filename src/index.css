@@ -35,10 +35,24 @@ a.leaflet-control-zoom-in.leaflet-disabled {
   @apply bg-stone-300 pointer-events-none;
 }
 
+/* user markers */
 .user-marker {
   @apply bg-stone-500 text-stone-100 border shadow-lg rounded border-none flex flex-row items-center text-sm gap-1 w-max p-1 opacity-80;
 }
 
 .user-marker-anchor {
   @apply w-[8px] h-[8px] bg-orange-500 absolute -top-1 -left-1 rounded-full shadow;
+}
+
+/* popups */
+.leaflet-popup-content-wrapper {
+  @apply bg-stone-500 rounded text-sm text-stone-100;
+}
+
+.leaflet-popup-content-wrapper .leaflet-popup-content {
+  @apply m-0 px-4 py-2 w-max;
+}
+
+.leaflet-popup-tip-container {
+  @apply hidden;
 }
