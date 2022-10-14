@@ -158,8 +158,10 @@ const UtilityButton = ({
 
 const LocationSearch = ({
   onFlyToLocation,
+  onFocusInput,
 }: {
   onFlyToLocation: (coords: number[]) => void;
+  onFocusInput?: () => void;
 }) => {
   const [query, setQuery] = useState<string>();
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -187,6 +189,7 @@ const LocationSearch = ({
           </div>
           <div className="relative flex-1">
             <Combobox.Input
+              onFocus={onFocusInput}
               ref={searchInputRef}
               placeholder="Find location"
               onChange={(event) => setQuery(event.target.value)}
@@ -319,6 +322,7 @@ const UtilityPanel = ({
 }) => {
   const map = useMap();
   const markerNameRef = useRef<HTMLInputElement>(null);
+  const [panelIsCollapsed, setPanelIsCollapsed] = useState(true);
   const [isWaitingForMarker, setIsWaitingForMarker] = useState(false);
 
   useMapEvents({
@@ -335,53 +339,67 @@ const UtilityPanel = ({
     },
   });
 
+  const panelKlass = cn(
+    'bg-stone-800 max-w-[390px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[9999] transition-all',
+    {
+      'shadow-lg rounded': panelIsCollapsed,
+    }
+  );
+
   return (
-    <div className="bg-stone-800 max-w-[390px] text-slate-100 p-4 absolute right-4 top-4 shadow-lg border border-stone-700 z-[999] flex flex-col gap-4">
+    <div className={panelKlass}>
       <LocationSearch
         onFlyToLocation={(coords) => {
           map.flyTo(coords as LatLngExpression, 5);
         }}
+        onFocusInput={() => setPanelIsCollapsed(false)}
       />
-      <div className="flex flex-row gap-1 items-center justify-items-stretch">
-        <UtilityButton onClick={() => map.flyTo([-128, 128], map.getZoom())}>
-          Center Map
-        </UtilityButton>
-        <UtilityButton onClick={() => map.flyTo([-128, 128], 2)}>
-          Reset Map
-        </UtilityButton>
-      </div>
-      <div className="border-t border-stone-600 pt-4">
-        <p className="text-sm text-stone-400 mb-2">
-          Use markers to save locations for yourself. Markers are saved locally
-          on your browser, and are only visible to you.
-        </p>
-        <input
-          type="text"
-          ref={markerNameRef}
-          className={cn(inputBaseKlass, 'block mb-2')}
-          placeholder="Marker label"
-        />
-        <UtilityButton
-          onClick={() => {
-            setIsWaitingForMarker(!isWaitingForMarker);
-          }}
-          className={cn({
-            'border-red-600 bg-red-900': isWaitingForMarker,
-          })}
-        >
-          {isWaitingForMarker ? 'Cancel' : 'Create marker'}
-        </UtilityButton>
-      </div>
-      <div className="text-sm">
-        <p>
-          <a
-            target="_blank"
-            href="https://github.com/filp/foxhole-map"
-            className="flex flex-row items-center gap-1"
+      <div
+        className={cn('flex flex-col gap-4 pt-2', {
+          'overflow-hidden h-0 pt-0': panelIsCollapsed,
+        })}
+      >
+        <div className="flex flex-row gap-1 items-center justify-items-stretch">
+          <UtilityButton onClick={() => map.flyTo([-128, 128], map.getZoom())}>
+            Center Map
+          </UtilityButton>
+          <UtilityButton onClick={() => map.flyTo([-128, 128], 2)}>
+            Reset Map
+          </UtilityButton>
+        </div>
+        <div className="border-t border-stone-600 pt-4">
+          <p className="text-sm text-stone-400 mb-2">
+            Use markers to save locations for yourself. Markers are saved
+            locally on your browser, and are only visible to you.
+          </p>
+          <input
+            type="text"
+            ref={markerNameRef}
+            className={cn(inputBaseKlass, 'block mb-2')}
+            placeholder="Marker label"
+          />
+          <UtilityButton
+            onClick={() => {
+              setIsWaitingForMarker(!isWaitingForMarker);
+            }}
+            className={cn({
+              'border-red-600 bg-red-900': isWaitingForMarker,
+            })}
           >
-            <CodeIcon /> Contribute to foxhole-map on GitHub
-          </a>
-        </p>
+            {isWaitingForMarker ? 'Cancel' : 'Create marker'}
+          </UtilityButton>
+        </div>
+        <div className="text-sm">
+          <p>
+            <a
+              target="_blank"
+              href="https://github.com/filp/foxhole-map"
+              className="flex flex-row items-center gap-1"
+            >
+              <CodeIcon /> Contribute to foxhole-map on GitHub
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   );
