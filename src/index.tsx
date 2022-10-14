@@ -26,7 +26,13 @@ import { findNearest } from 'geolib';
 
 import { betterMapData, regionBorders, regions } from './map/regions';
 import { searcher } from './map/search';
-import { CodeIcon, DeleteIcon, MapPinSvg, SearchIcon } from './icons';
+import {
+  BackspaceIcon,
+  CodeIcon,
+  DeleteIcon,
+  MapPinSvg,
+  SearchIcon,
+} from './icons';
 import { getRoadGraph, getRoadPoints } from './map/roads';
 
 type ProjectionMap = {
@@ -156,6 +162,7 @@ const LocationSearch = ({
   onFlyToLocation: (coords: number[]) => void;
 }) => {
   const [query, setQuery] = useState<string>();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   const filteredLocations =
     !query || query === '' ? [] : searcher.search(query).slice(0, 5);
@@ -165,6 +172,12 @@ const LocationSearch = ({
     'border-red-800': query && query !== '' && filteredLocations.length === 0,
   });
 
+  const onClearSearchInput = () => {
+    if (searchInputRef.current) {
+      searchInputRef.current.value = '';
+    }
+  };
+
   return (
     <div>
       <Combobox onChange={(coords: number[]) => onFlyToLocation(coords)}>
@@ -172,11 +185,30 @@ const LocationSearch = ({
           <div className="px-2 text-stone-300">
             <SearchIcon />
           </div>
-          <Combobox.Input
-            placeholder="Find location"
-            onChange={(event) => setQuery(event.target.value)}
-            className={inputKlass}
-          />
+          <div className="relative flex-1">
+            <Combobox.Input
+              ref={searchInputRef}
+              placeholder="Find location"
+              onChange={(event) => setQuery(event.target.value)}
+              className={inputKlass}
+            />
+            <div
+              className={cn(
+                'absolute right-3 top-0 h-full flex flex-col justify-center',
+                {
+                  hidden: !query || query.length === 0,
+                }
+              )}
+            >
+              <button
+                className="p-1 hover:bg-stone-800 rounded"
+                title="Clear search"
+                onClick={onClearSearchInput}
+              >
+                <BackspaceIcon />
+              </button>
+            </div>
+          </div>
         </div>
         <Combobox.Options className="absolute bg-stone-800 shadow-sm rounded border border-stone-600 mt-1">
           {filteredLocations.map((location) => (
@@ -416,7 +448,10 @@ const Navigation = () => {
         setIsPickingTarget(false);
 
         onPathfind(roamMarker!, event.latlng);
-      } else {
+      }
+    },
+    dblclick: (event) => {
+      if (!isPickingTarget) {
         setRoamMarker(event.latlng);
       }
     },
