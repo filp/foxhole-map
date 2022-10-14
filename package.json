@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "build": "parcel build src/index.html",
     "dev": "parcel serve src/index.html",
-    "process-roads": "ts-node src/util/processRoads.ts"
+    "process-roads": "ts-node src/tools/processRoads.ts"
   },
   "devDependencies": {
     "@headlessui/tailwindcss": "^0.1.1",
