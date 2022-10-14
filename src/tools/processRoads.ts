@@ -48,7 +48,7 @@ const pointsArrayToGraph = (points: Point[]) => {
       graph.addEdge(
         previousIdent,
         ident,
-        2000 - getDistance(previousPoint.x, previousPoint.y, point.x, point.y)
+        getDistance(previousPoint.x, previousPoint.y, point.x, point.y)
       );
     }
   });
