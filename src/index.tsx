@@ -266,6 +266,7 @@ const MapPinMarker = ({
   children?: React.ReactNode;
 }) => (
   <Marker
+    zIndexOffset={1000}
     position={position}
     title={title}
     icon={
